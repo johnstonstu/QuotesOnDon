@@ -124,9 +124,18 @@ one command before a run is trusted.
 read X directly. It must not hand over wording — only which posts exist — so the transport is a GitHub
 issue. Paste this to the Bot:
 
-> Open an issue on `johnstonstu/QuotesOnDon` labelled `x-inbox`, titled "X finds: <topic>". In the body,
-> list the full URLs of recent original posts (not replies or reposts) by @realDonaldTrump about <topic>,
-> one per line, with the post URL only — do not quote or paraphrase any of them.
+> Open an issue on `johnstonstu/QuotesOnDon` labelled `x-inbox`, titled "X finds: recent originals <date>".
+> In the body, list the full URLs of the most recent **original** posts (not replies, not reposts) by
+> @realDonaldTrump from the last 48 hours. **All topics**, up to 30 posts, newest first, one URL per line.
+> Include only the post URLs — do not quote, summarise or paraphrase any of them. If you cannot read X,
+> say so instead of guessing.
+
+No topic filter by default: the site is a random-quote generator, so narrowing the stream only biases it,
+and the keyword tagger files each quote under tariff / immigration / media / foreign-policy etc. anyway.
+A topic run is fine when you want one — add "about <topic>" and the same URL-only rule applies.
+
+A Bot whose X connection is not authorised will open an empty issue. The pipeline comments on that
+outcome rather than failing silently, but the Bot must be able to read timelines first.
 
 Then:
 

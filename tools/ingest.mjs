@@ -241,9 +241,17 @@ function parseFeed(xml) {
     const linkTag = block.match(/<link[^>]*href="([^"]+)"/i);
     const pub = tag(block, ['pubDate', 'published', 'updated']);
     const body = tag(block, ['content:encoded', 'content', 'description', 'summary']);
+    const url = (tag(block, ['link']) ?? linkTag?.[1] ?? '').trim();
+    // A mirror feed can carry the primary artefact's own URL (e.g. Trump's Truth
+    // republishes truth:originalUrl). When it does, the quote cites that, and the
+    // mirror is recorded as the verifier instead of being the source itself.
+    const originalUrl = (tag(block, ['truth:originalUrl']) ?? '').trim() || null;
+    const originalId = (tag(block, ['truth:originalId']) ?? '').trim() || null;
     return {
       title: htmlToText(tag(block, ['title']) ?? ''),
-      url: (tag(block, ['link']) ?? linkTag?.[1] ?? '').trim(),
+      url: originalUrl ?? url,
+      mirrorUrl: originalUrl ? url : null,
+      originalId,
       publishedAt: pub ? new Date(decodeEntities(pub.trim())).toISOString().slice(0, 10) : null,
       body: body ? htmlToText(body) : '',
     };
@@ -661,7 +669,7 @@ for (const source of enabled) {
             {
               // The label is a short pointer; the words themselves live in the excerpt below.
               label: `${source.label} — ${(item.title || item.url).slice(0, 60)}`.slice(0, 140),
-              url: item.url,
+              url: item.url, // the primary artefact when the feed supplies it
               type: source.sourceType,
               accessedAt: today,
               excerpt: hit.evidence.slice(0, 400),
@@ -679,7 +687,9 @@ for (const source of enabled) {
           evidence: {
             method: source.extract,
             articleTitle: item.title || null,
-            verifier: item.verifiedBy ?? null,
+            verifier:
+              item.verifiedBy ??
+              (item.mirrorUrl ? `${new URL(item.mirrorUrl).hostname} mirror of ${item.url}` : null),
             discovery: item.discovery ?? null,
             articlePublishedAt: item.publishedAt ?? null,
             fetchedAt: new Date().toISOString(),

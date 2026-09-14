@@ -657,7 +657,8 @@ for (const source of enabled) {
           tags: [...(isPost ? ['from-post'] : isMeme ? ['from-meme'] : ['from-news']), ...tagsFor(hit.text)],
           sources: [
             {
-              label: `${source.label} — ${(item.title || item.url).slice(0, 150)}`.slice(0, 190),
+              // The label is a short pointer; the words themselves live in the excerpt below.
+              label: `${source.label} — ${(item.title || item.url).slice(0, 60)}`.slice(0, 140),
               url: item.url,
               type: source.sourceType,
               accessedAt: today,

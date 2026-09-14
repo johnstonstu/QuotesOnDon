@@ -23,7 +23,7 @@ npm install
 npm run build      # validates the store, then builds dist/
 npm run preview    # serve the build at http://localhost:4321
 
-npm run dash       # review dashboard → http://127.0.0.1:8787
+npm run dash       # review dashboard → http://127.0.0.1:8799 (DASH_PORT overrides)
 npm run ingest     # hunt for new candidates (writes to data/candidates/)
 npm run data:check # validate the store only
 npm test           # store rules + build freshness
@@ -177,7 +177,9 @@ and refuses to touch a host that disallows the bot. Credentials come from `.env`
 
 ### The dashboard
 
-`npm run dash` serves a local-only review page on `127.0.0.1:8787`:
+`npm run dash` serves a local-only review page on `127.0.0.1:8799` (`DASH_PORT` overrides; it refuses to
+start if the port is taken rather than silently sharing it — 8787 belongs to the Grok Bot app, which listens
+there for its X OAuth callback):
 
 - candidates with the quoted words, the source link, and the surrounding sentence the extractor saw;
 - **Approve & publish** (runs the validator, rolls itself back if the record would break the build),

@@ -26,7 +26,10 @@ const CANDIDATES_DIR = join(ROOT, 'data/candidates');
 const REJECTED_DIR = join(CANDIDATES_DIR, 'rejected');
 const APPROVED_DIR = join(CANDIDATES_DIR, 'approved');
 const LOG_DIR = join(ROOT, 'data/ingest-log');
-const PORT = Number(process.env.DASH_PORT || 8787);
+// 8787 is deliberately avoided: the Grok Bot app listens there for its X OAuth
+// callback on both loopback stacks, and a review UI squatting that port swallows the
+// auth code. Override with DASH_PORT if 8799 is ever taken too.
+const PORT = Number(process.env.DASH_PORT || 8799);
 
 const readJson = (path, fallback = null) => {
   try {
@@ -311,6 +314,18 @@ const server = createServer(async (req, res) => {
   }
 
   send(200, render(message));
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(
+      `port ${PORT} is already in use — refusing to start rather than silently sharing it.\n` +
+        `Another tool may want it (the Grok Bot app uses 8787 for its X callback). Pick another: DASH_PORT=8801 npm run dash`,
+    );
+  } else {
+    console.error(`dashboard failed to start: ${err.message}`);
+  }
+  process.exit(1);
 });
 
 server.listen(PORT, '127.0.0.1', () => {

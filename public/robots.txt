@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /quotes-index.json
+
+Sitemap: https://quotesondon.com/sitemap-index.xml

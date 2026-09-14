@@ -1,0 +1,20 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Random quote — Quotes on don" description="Sending you to a random quote." path="/random/">
+  <div class="page-head">
+    <h1>Finding a quote…</h1>
+    <p class="lede" id="fallback">If nothing happens, <a href="/">go to the front page</a>.</p>
+  </div>
+
+  <script>
+    fetch('/quotes-index.json')
+      .then((r) => r.json())
+      .then((items: Array<{ id: string }>) => {
+        if (!items.length) return;
+        const pick = items[Math.floor(Math.random() * items.length)];
+        location.replace(`/quotes/${pick.id}/`);
+      });
+  </script>
+</Base>

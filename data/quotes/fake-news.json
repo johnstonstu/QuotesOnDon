@@ -1,0 +1,25 @@
+{
+  "id": "fake-news",
+  "text": "Fake news.",
+  "spokenOn": null,
+  "context": "Used at rallies and on Twitter from 2017",
+  "tags": [
+    "media",
+    "social-media"
+  ],
+  "confidence": "widely-reported",
+  "sources": [
+    {
+      "label": "Wikipedia — Fake news",
+      "url": "https://en.wikipedia.org/wiki/Fake_news",
+      "type": "reference",
+      "accessedAt": "2026-09-13",
+      "excerpt": null
+    }
+  ],
+  "speaker": "Donald Trump",
+  "notes": null,
+  "status": "published",
+  "addedAt": "2026-09-13",
+  "addedBy": "migration:quotes_on_dev (2018 WordPress demo)"
+}

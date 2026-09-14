@@ -1,0 +1,129 @@
+---
+import Base from '../layouts/Base.astro';
+import QuoteStage from '../components/QuoteStage.astro';
+import { quotes } from '../lib/quotes';
+
+// The build bakes in one quote; the browser rotates from the same set immediately.
+const baked = quotes[Math.floor(Math.random() * quotes.length)];
+---
+
+<Base title="Quotes on don — one random quote, with the receipt">
+  <div data-quote-root>
+    <QuoteStage quote={baked} />
+  </div>
+
+  <div class="quote-actions">
+    <button type="button" class="btn" id="another" data-another>Show Me Another!</button>
+    <a class="link-quiet" href={`/quotes/${baked.id}/`} data-permalink>permalink for this quote</a>
+  </div>
+
+  <script>
+    const root = document.querySelector('[data-quote-root]');
+    const button = document.getElementById('another');
+    const permalink = document.querySelector('[data-permalink]');
+    const textEl = document.querySelector('[data-quote-text]');
+    const speakerEl = document.querySelector('[data-quote-speaker]');
+
+    type ClientQuote = {
+      id: string;
+      text: string;
+      speaker: string;
+      spokenOn: string | null;
+      context: string | null;
+      confidence: string;
+      source: { label: string; url: string } | null;
+    };
+
+    let pool: ClientQuote[] = [];
+    let currentId: string | null = null;
+
+    const confidenceCopy: Record<string, string> = {
+      primary: 'Primary source held',
+      secondary: 'Secondary source',
+      'widely-reported': 'Widely reported — no located primary source',
+      disputed: 'Attribution disputed',
+    };
+
+    async function loadPool(): Promise<ClientQuote[]> {
+      if (pool.length) return pool;
+      const res = await fetch('/quotes-index.json');
+      pool = await res.json();
+      return pool;
+    }
+
+    function render(quote: ClientQuote) {
+      if (!root || !textEl || !speakerEl) return;
+      const stage = root.querySelector('figure');
+      const attrib = root.querySelector('.quote-attrib');
+      const context = root.querySelector('.quote-context');
+      const badge = root.querySelector('.badge');
+
+      textEl.textContent = quote.text;
+      speakerEl.textContent = quote.speaker;
+
+      if (attrib) {
+        attrib.querySelector('.source')?.remove();
+        if (quote.source) {
+          const link = document.createElement('a');
+          link.className = 'source';
+          link.href = quote.source.url;
+          link.rel = 'noopener nofollow';
+          link.textContent = quote.source.label;
+          attrib.append(', ', link);
+        }
+      }
+      if (context) {
+        context.textContent = [quote.context, quote.spokenOn].filter(Boolean).join(' · ');
+        context.hidden = !context.textContent;
+      }
+      if (badge) {
+        badge.className = `badge ${quote.confidence}`;
+        badge.lastChild!.textContent = confidenceCopy[quote.confidence] ?? quote.confidence;
+      }
+      if (permalink) permalink.setAttribute('href', `/quotes/${quote.id}/`);
+      currentId = quote.id;
+      stage?.setAttribute('aria-label', `Quote by ${quote.speaker}`);
+    }
+
+    function randomOther(): ClientQuote {
+      if (pool.length < 2) return pool[0];
+      let pick = pool[Math.floor(Math.random() * pool.length)];
+      let guard = 0;
+      while (pick.id === currentId && guard++ < 12) pick = pool[Math.floor(Math.random() * pool.length)];
+      return pick;
+    }
+
+    button?.addEventListener('click', async () => {
+      const items = await loadPool();
+      const text = document.querySelector('[data-quote-text]');
+      text?.classList.add('swapping');
+      const next = randomOther();
+      window.setTimeout(() => {
+        render(next);
+        text?.classList.remove('swapping');
+        history.pushState({ id: next.id }, '', `/quotes/${next.id}/`);
+      }, 180);
+    });
+
+    // Deep-linkable rotation: /?id=<slug> or back/forward both land on the same quote.
+    window.addEventListener('popstate', async (event) => {
+      const items = await loadPool();
+      const id = (event.state as { id?: string } | null)?.id;
+      const match = items.find((q) => q.id === id);
+      if (match) render(match);
+    });
+
+    // Rotate to a fresh random quote on load, so a reload feels like the 2018 site.
+    void (async () => {
+      const items = await loadPool();
+      const dev = !navigator.webdriver; // keep automated checks deterministic
+      if (items.length > 1 && dev) {
+        const next = randomOther();
+        render(next);
+        history.replaceState({ id: next.id }, '', `/quotes/${next.id}/`);
+      } else if (items.length) {
+        currentId = items.find((q) => q.text === textEl?.textContent)?.id ?? null;
+      }
+    })();
+  </script>
+</Base>

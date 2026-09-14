@@ -1,0 +1,25 @@
+{
+  "id": "make-america-great-again",
+  "text": "Make America Great Again.",
+  "spokenOn": null,
+  "context": "Campaign slogan, 2016 presidential campaign",
+  "tags": [
+    "campaign",
+    "slogan"
+  ],
+  "confidence": "secondary",
+  "sources": [
+    {
+      "label": "Wikipedia — Make America Great Again",
+      "url": "https://en.wikipedia.org/wiki/Make_America_Great_Again",
+      "type": "reference",
+      "accessedAt": "2026-09-13",
+      "excerpt": null
+    }
+  ],
+  "speaker": "Donald Trump",
+  "notes": null,
+  "status": "published",
+  "addedAt": "2026-09-13",
+  "addedBy": "migration:quotes_on_dev (2018 WordPress demo)"
+}

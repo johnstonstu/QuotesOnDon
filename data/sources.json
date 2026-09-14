@@ -1,0 +1,86 @@
+{
+  "userAgent": "QuotesOnDonBot/0.1 (+https://github.com/johnstonstu/QuotesOnDon; contact: stu.w.johnston@gmail.com)",
+  "maxArticlesPerRun": 6,
+  "minSecondsBetweenRequests": 1.2,
+  "minQuoteChars": 30,
+  "maxQuoteChars": 300,
+  "duplicateThreshold": 0.75,
+  "sources": [
+    {
+      "id": "x-trump",
+      "label": "X — @realDonaldTrump",
+      "kind": "x-api",
+      "handle": "realDonaldTrump",
+      "extract": "post",
+      "enabled": false,
+      "sourceType": "primary",
+      "requiresEnv": "X_BEARER_TOKEN",
+      "notes": "The first source to switch on. Needs a bearer token in the environment (X developer app). X's free tier cannot read another account's posts — reading @realDonaldTrump needs the paid Basic tier (~US$200/mo). Until a token is present the pipeline says so and skips, rather than pretending."
+    },
+    {
+      "id": "truth-social",
+      "label": "Truth Social (Trump's Truth archive feed)",
+      "kind": "post-feed",
+      "url": "https://www.trumpstruth.org/feed",
+      "extract": "post",
+      "enabled": true,
+      "sourceType": "primary",
+      "notes": "His own posts, full text, one stable URL per post (trumpstruth.org/statuses/<id>), no auth needed. Stands in for the X feed while X access is unresolved — and it is the same words, since he cross-posts."
+    },
+    {
+      "id": "npr-politics",
+      "label": "NPR Politics",
+      "kind": "rss",
+      "url": "https://feeds.npr.org/1014/rss.xml",
+      "extract": "sentence-quote",
+      "enabled": true,
+      "sourceType": "secondary",
+      "notes": "News reports that quote him; the article URL is the receipt. Not a transcript."
+    },
+    {
+      "id": "pbs-politics",
+      "label": "PBS NewsHour Politics",
+      "kind": "rss",
+      "url": "https://www.pbs.org/newshour/feeds/rss/politics",
+      "extract": "sentence-quote",
+      "enabled": true,
+      "sourceType": "secondary",
+      "notes": "Same caveat as NPR."
+    },
+    {
+      "id": "reddit-memes",
+      "label": "Reddit meme subs (r/TrumpMeme, r/PoliticalHumor, r/QuotesPorn)",
+      "kind": "reddit-api",
+      "extract": "meme-quote",
+      "subs": [
+        "TrumpMeme",
+        "PoliticalHumor",
+        "QuotesPorn"
+      ],
+      "enabled": true,
+      "sourceType": "reference",
+      "notes": "Reddit's robots.txt disallows all generic crawlers (User-agent: * / Disallow: /), so the anonymous Atom feed route is off-limits for a bot in a public repo. This source therefore uses Reddit's credentialed app API (free 'script' app, client_credentials grant) when REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET are set, and stays disabled otherwise. Meme-derived candidates arrive tagged from-meme and cannot be published until a second, non-meme source corroborates them.",
+      "requiresEnv": "REDDIT_CLIENT_ID"
+    },
+    {
+      "id": "gdelt",
+      "label": "GDELT DOC 2.0 (global news search)",
+      "kind": "gdelt",
+      "extract": "sentence-quote",
+      "url": "https://api.gdeltproject.org/api/v2/doc/doc",
+      "enabled": false,
+      "sourceType": "secondary",
+      "notes": "Disabled by default: the free endpoint asks for at most one request every 5 seconds and throttles bursts. Enable per run with --source=gdelt."
+    },
+    {
+      "id": "presidency-ucsb",
+      "label": "The American Presidency Project — remarks & transcripts",
+      "kind": "html-list",
+      "extract": "sentence-quote",
+      "url": "https://www.presidency.ucsb.edu/advanced-search?items_per_page=25&order=field_docs_start_date_time_value&sort=desc&f%5B0%5D=person%3A75",
+      "enabled": false,
+      "sourceType": "primary",
+      "notes": "Primary transcripts. Enable per run with --source=presidency-ucsb; its robots.txt sets Crawl-delay: 10, so a run takes minutes."
+    }
+  ]
+}

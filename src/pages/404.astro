@@ -1,0 +1,19 @@
+---
+import Base from '../layouts/Base.astro';
+import { quotes } from '../lib/quotes';
+
+const pick = quotes.slice(0, 3);
+---
+
+<Base title="Not here — Quotes on don" description="That page does not exist.">
+  <div class="page-head">
+    <h1>That page is not here</h1>
+    <p class="lede">But these are:</p>
+  </div>
+  {pick.map((q) => (
+    <a class="card" href={`/quotes/${q.id}/`}>
+      <p class="excerpt">{q.text}</p>
+      <p class="meta"><span>— {q.speaker}</span></p>
+    </a>
+  ))}
+</Base>

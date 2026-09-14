@@ -1,0 +1,73 @@
+---
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
+import Base from '../layouts/Base.astro';
+import { quotes, confidenceCounts, tagsWithCounts, sourceHosts, totalQuotes } from '../lib/quotes';
+
+const confidence = confidenceCounts();
+const tags = tagsWithCounts();
+const hosts = sourceHosts();
+
+const root = process.cwd();
+const candidatesDir = join(root, 'data/candidates');
+const candidates = existsSync(candidatesDir)
+  ? readdirSync(candidatesDir).filter((f) => f.endsWith('.json')).length
+  : 0;
+
+const logPath = join(root, 'data/ingest-log/last-run.json');
+const lastRun = existsSync(logPath) ? JSON.parse(readFileSync(logPath, 'utf8')) : null;
+
+const sourced = quotes.filter((q) => q.sources.some((s) => s.type === 'primary' || s.type === 'secondary')).length;
+const pct = (n: number) => `${Math.round((n / Math.max(totalQuotes, 1)) * 100)}%`;
+---
+
+<Base title="Pipeline status — Quotes on don" description="What is in the quote store and what the pipeline last did." path="/status/">
+  <div class="page-head">
+    <h1>Pipeline status</h1>
+    <p class="lede">
+      Read-only view of the quote store this site is built from. Every number here is derived from <code>data/quotes/</code> at build time — nothing is typed in by hand.
+    </p>
+  </div>
+
+  <div class="stat-grid">
+    <div class="stat"><span class="n">{totalQuotes}</span><span class="k">published quotes</span></div>
+    <div class="stat"><span class="n">{candidates}</span><span class="k">awaiting review</span></div>
+    <div class="stat"><span class="n">{sourced}</span><span class="k">with a primary/secondary source</span></div>
+    <div class="stat"><span class="n">{tags.length}</span><span class="k">tags</span></div>
+  </div>
+
+  <h2>Confidence</h2>
+  <ul class="plain">
+    <li>primary — transcript/recording held: <strong>{confidence.primary}</strong> ({pct(confidence.primary)})</li>
+    <li>secondary — report quoting the words: <strong>{confidence.secondary}</strong> ({pct(confidence.secondary)})</li>
+    <li>widely reported — no located primary source: <strong>{confidence['widely-reported']}</strong> ({pct(confidence['widely-reported'])})</li>
+    <li>disputed: <strong>{confidence.disputed}</strong></li>
+  </ul>
+
+  <h2>Last ingest run</h2>
+  {lastRun ? (
+    <dl class="provenance">
+      <div><dt>Ran</dt><dd>{lastRun.ranAt}</dd></div>
+      <div><dt>Sources</dt><dd>{(lastRun.sources ?? []).join(', ') || '—'}</dd></div>
+      <div><dt>Checked</dt><dd>{lastRun.checked ?? 0} pages, {lastRun.candidates ?? 0} candidates written</dd></div>
+      <div><dt>Duplicates</dt><dd>{lastRun.duplicates ?? 0} skipped</dd></div>
+    </dl>
+  ) : (
+    <p class="empty">
+      No ingest has run yet — <code>data/ingest-log/last-run.json</code> does not exist. The store currently holds the
+      2018 demo set migrated by hand.
+    </p>
+  )}
+
+  <h2>Where the sources point</h2>
+  <ul class="plain">
+    {hosts.map((host) => <li>{host}</li>)}
+  </ul>
+
+  <h2>Tags</h2>
+  <ul class="plain">
+    {tags.map((t) => (
+      <li><a href={`/quotes/?tag=${t.tag}`}>#{t.tag}</a> <span class="n">{t.count}</span></li>
+    ))}
+  </ul>
+</Base>

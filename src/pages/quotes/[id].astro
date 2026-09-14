@@ -1,0 +1,81 @@
+---
+import Base from '../../layouts/Base.astro';
+import { quotes, formatDate } from '../../lib/quotes';
+
+export function getStaticPaths() {
+  return quotes.map((quote) => ({ params: { id: quote.id }, props: { quote } }));
+}
+
+const { quote } = Astro.props;
+
+const dateLabel = formatDate(quote.spokenOn);
+const source = quote.sources[0];
+---
+
+<Base
+  title={`${quote.text.slice(0, 60)}${quote.text.length > 60 ? '…' : ''} — Quotes on don`}
+  description={`${quote.speaker}: ${quote.text}`}
+  path={`/quotes/${quote.id}/`}
+>
+  <article class="page-head">
+    <figure class="quote-stage">
+      <span class="quote-mark" aria-hidden="true">&ldquo;</span>
+      <div class="quote-body">
+        <blockquote class="quote-text">{quote.text}</blockquote>
+        <figcaption class="quote-attrib">
+          <span class="dash" aria-hidden="true">&mdash;</span>
+          <span>{quote.speaker}</span>
+          {source && <>, <a class="source" href={source.url} rel="noopener nofollow">{source.label}</a></>}
+        </figcaption>
+      </div>
+      <span class="quote-mark closing" aria-hidden="true">&rdquo;</span>
+    </figure>
+
+    <div class="quote-actions">
+      <a class="btn" href="/">Show Me Another!</a>
+    </div>
+
+    <h2>Provenance</h2>
+    <dl class="provenance">
+      <div>
+        <dt>Confidence</dt>
+        <dd>
+          <span class={`badge ${quote.confidence}`}><span class="dot" aria-hidden="true"></span>{quote.confidence}</span>
+        </dd>
+      </div>
+      <div>
+        <dt>Said</dt>
+        <dd>{dateLabel ?? 'date not pinned'}{quote.context && <> — {quote.context}</>}</dd>
+      </div>
+      <div>
+        <dt>Tags</dt>
+        <dd>{quote.tags.map((tag) => <a href={`/quotes/?tag=${tag}`} style="margin-right:.6rem">#{tag}</a>)}</dd>
+      </div>
+      <div>
+        <dt>Sources</dt>
+        <dd>
+          <ul class="plain">
+            {quote.sources.map((s) => (
+              <li>
+                <a href={s.url} rel="noopener nofollow">{s.label}</a>{' '}
+                <span class="badge">{s.type}</span>
+                {s.accessedAt && <span class="count">accessed {s.accessedAt}</span>}
+                {s.excerpt && <p class="excerpt">{s.excerpt}</p>}
+              </li>
+            ))}
+          </ul>
+        </dd>
+      </div>
+      <div>
+        <dt>Added</dt>
+        <dd>{quote.addedAt} by {quote.addedBy}</dd>
+      </div>
+      {quote.notes && (
+        <div>
+          <dt>Note</dt>
+          <dd>{quote.notes}</dd>
+        </div>
+      )}
+    </dl>
+  </article>
+</Base>

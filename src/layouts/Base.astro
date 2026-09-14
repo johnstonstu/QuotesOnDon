@@ -1,0 +1,76 @@
+---
+import '../styles/global.css';
+import { totalQuotes } from '../lib/quotes';
+
+interface Props {
+  title: string;
+  description?: string;
+  path?: string;
+}
+
+const {
+  title,
+  description = 'One random quote, on demand, with the receipt attached.',
+  path = Astro.url.pathname,
+} = Astro.props;
+
+const canonical = new URL(path, Astro.site ?? 'https://quotesondon.com');
+const nav = [
+  { href: '/', label: 'Random' },
+  { href: '/quotes/', label: 'Archive' },
+  { href: '/status/', label: 'Status' },
+  { href: '/about/', label: 'About' },
+];
+const currentPath = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const isCurrent = (href: string) => (href.replace(/\/+$/, '') || '/') === currentPath;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" type="application/rss+xml" title="Quotes on don" href="/rss.xml" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,300;0,800;1,300&family=Inter:wght@400;600&display=swap"
+    />
+    <meta name="generator" content={Astro.generator} />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to the quote</a>
+    <header class="site-header wrap">
+      <a class="brand" href="/">
+        quotes <em>on</em> don <span class="face" aria-hidden="true">🇺🇸</span>
+      </a>
+      <nav aria-label="Main">
+        {nav.map((item) => (
+          <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>{item.label}</a>
+        ))}
+      </nav>
+    </header>
+
+    <main id="main" class="wrap">
+      <slot />
+    </main>
+
+    <footer class="site-footer wrap">
+      <span>{totalQuotes} quotes, each with its source. Built on the 2018 Quotes on don, rebuilt for 2026.</span>
+      <span>
+        <a href="/rss.xml">RSS</a> · <a href="/status/">pipeline status</a> ·
+        <a href="https://github.com/johnstonstu/QuotesOnDon">source</a>
+      </span>
+    </footer>
+  </body>
+</html>

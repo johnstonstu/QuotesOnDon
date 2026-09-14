@@ -1,0 +1,136 @@
+---
+import Base from '../../layouts/Base.astro';
+import { quotes, tagsWithCounts, formatDate } from '../../lib/quotes';
+
+const tags = tagsWithCounts();
+---
+
+<Base
+  title="Archive — Quotes on don"
+  description={`All ${quotes.length} quotes, searchable, each with its source.`}
+  path="/quotes/"
+>
+  <div class="page-head">
+    <h1>Archive</h1>
+    <p class="lede">
+      {quotes.length} quotes. Search the text, the attribution or a tag — this runs entirely in your browser,
+      no server involved.
+    </p>
+  </div>
+
+  <div class="controls">
+    <input type="search" id="q" placeholder="Search quotes…" aria-label="Search quotes" autocomplete="off" />
+    <select id="tagFilter" aria-label="Filter by tag">
+      <option value="">Every tag</option>
+      {tags.map((t) => <option value={t.tag}>{t.tag} ({t.count})</option>)}
+    </select>
+    <span class="count" id="count">{quotes.length} shown</span>
+  </div>
+
+  <div class="chips" id="chips">
+    {tags.slice(0, 8).map((t) => (
+      <button type="button" class="chip" data-tag={t.tag} aria-pressed="false">#{t.tag} {t.count}</button>
+    ))}
+  </div>
+
+  <div id="list" style="margin-top:1.25rem"></div>
+  <p class="empty" id="empty" hidden>Nothing matches that.</p>
+
+  <noscript>
+    <ul class="plain" style="margin-top:1.5rem">
+      {quotes.map((q) => (
+        <li>
+          <a href={`/quotes/${q.id}/`}>{q.text.length > 90 ? `${q.text.slice(0, 90)}…` : q.text}</a>{' '}
+          <span class="n">{formatDate(q.spokenOn) ?? ''}</span>
+        </li>
+      ))}
+    </ul>
+  </noscript>
+
+  <script>
+    type ClientQuote = {
+      id: string;
+      text: string;
+      speaker: string;
+      spokenOn: string | null;
+      context: string | null;
+      tags: string[];
+      confidence: string;
+      source: { label: string; url: string } | null;
+    };
+
+    const list = document.getElementById('list');
+    const input = document.getElementById('q') as HTMLInputElement | null;
+    const select = document.getElementById('tagFilter') as HTMLSelectElement | null;
+    const countEl = document.getElementById('count');
+    const emptyEl = document.getElementById('empty');
+    const chips = [...document.querySelectorAll<HTMLButtonElement>('.chip')];
+
+    const params = new URLSearchParams(location.search);
+    let activeTag = params.get('tag') ?? '';
+    let pool: ClientQuote[] = [];
+
+    const escape = (value: string) => value.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+
+    function searchable(q: ClientQuote) {
+      return [q.text, q.speaker, q.context ?? '', q.tags.join(' ')].join(' ').toLowerCase();
+    }
+
+    function cardFor(q: ClientQuote) {
+      const source = q.source
+        ? ` · <a href="${q.source.url}" rel="noopener nofollow">${escape(q.source.label)}</a>`
+        : '';
+      const date = q.spokenOn ? ` · ${q.spokenOn}` : '';
+      const tags = q.tags.map((t) => `#${escape(t)}`).join(' ');
+      // No <a> nested inside <a>: the parser would split the card in two.
+      return `<article class="card" data-id="${q.id}">
+        <p class="excerpt"><a href="/quotes/${q.id}/">${escape(q.text)}</a></p>
+        <p class="meta"><span>— ${escape(q.speaker)}${date}</span><span class="badge ${q.confidence}"><span class="dot"></span>${escape(q.confidence)}</span></p>
+        <p class="meta"><span>${tags}</span>${source}</p>
+      </article>`;
+    }
+
+    function apply() {
+      const term = (input?.value ?? '').trim().toLowerCase();
+      const matched = pool.filter((q) => {
+        if (activeTag && !q.tags.includes(activeTag)) return false;
+        if (!term) return true;
+        return searchable(q).includes(term);
+      });
+      if (list) list.innerHTML = matched.map(cardFor).join('');
+      if (countEl) countEl.textContent = `${matched.length} shown`;
+      if (emptyEl) emptyEl.hidden = matched.length > 0;
+      chips.forEach((chip) => chip.setAttribute('aria-pressed', String(chip.dataset.tag === activeTag)));
+      if (select) select.value = activeTag;
+    }
+
+    input?.addEventListener('input', apply);
+    select?.addEventListener('change', () => {
+      activeTag = select.value;
+      apply();
+    });
+    chips.forEach((chip) =>
+      chip.addEventListener('click', () => {
+        activeTag = activeTag === chip.dataset.tag ? '' : chip.dataset.tag!;
+        const url = new URL(location.href);
+        if (activeTag) url.searchParams.set('tag', activeTag);
+        else url.searchParams.delete('tag');
+        history.replaceState(null, '', url);
+        apply();
+      }),
+    );
+
+    fetch('/quotes-index.json')
+      .then((r) => r.json())
+      .then((items: ClientQuote[]) => {
+        pool = items;
+        apply();
+      })
+      .catch(() => {
+        if (emptyEl) {
+          emptyEl.hidden = false;
+          emptyEl.textContent = 'Could not load the quote index — the <noscript> list below still works.';
+        }
+      });
+  </script>
+</Base>

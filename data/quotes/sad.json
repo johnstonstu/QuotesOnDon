@@ -1,0 +1,25 @@
+{
+  "id": "sad",
+  "text": "Sad!",
+  "spokenOn": null,
+  "context": "Twitter sign-off",
+  "tags": [
+    "social-media",
+    "catchphrase"
+  ],
+  "confidence": "widely-reported",
+  "sources": [
+    {
+      "label": "Wikipedia — Donald Trump on social media",
+      "url": "https://en.wikipedia.org/wiki/Donald_Trump_on_social_media",
+      "type": "reference",
+      "accessedAt": "2026-09-13",
+      "excerpt": null
+    }
+  ],
+  "speaker": "Donald Trump",
+  "notes": null,
+  "status": "published",
+  "addedAt": "2026-09-13",
+  "addedBy": "migration:quotes_on_dev (2018 WordPress demo)"
+}

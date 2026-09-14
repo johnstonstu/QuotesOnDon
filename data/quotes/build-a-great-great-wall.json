@@ -1,0 +1,25 @@
+{
+  "id": "build-a-great-great-wall",
+  "text": "I will build a great, great wall on our southern border. And I will have Mexico pay for that wall.",
+  "spokenOn": "2015-06-16",
+  "context": "Announcement speech, Trump Tower, New York",
+  "tags": [
+    "immigration",
+    "campaign"
+  ],
+  "confidence": "secondary",
+  "sources": [
+    {
+      "label": "Wikipedia — Donald Trump 2016 presidential campaign",
+      "url": "https://en.wikipedia.org/wiki/Donald_Trump_2016_presidential_campaign",
+      "type": "reference",
+      "accessedAt": "2026-09-13",
+      "excerpt": null
+    }
+  ],
+  "speaker": "Donald Trump",
+  "notes": null,
+  "status": "published",
+  "addedAt": "2026-09-13",
+  "addedBy": "migration:quotes_on_dev (2018 WordPress demo)"
+}

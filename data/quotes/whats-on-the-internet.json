@@ -1,0 +1,25 @@
+{
+  "id": "whats-on-the-internet",
+  "text": "All I know is what's on the internet.",
+  "spokenOn": null,
+  "context": "Interview, 2016",
+  "tags": [
+    "media",
+    "television"
+  ],
+  "confidence": "widely-reported",
+  "sources": [
+    {
+      "label": "Wikipedia — Donald Trump",
+      "url": "https://en.wikipedia.org/wiki/Donald_Trump",
+      "type": "reference",
+      "accessedAt": "2026-09-13",
+      "excerpt": null
+    }
+  ],
+  "speaker": "Donald Trump",
+  "notes": null,
+  "status": "published",
+  "addedAt": "2026-09-13",
+  "addedBy": "migration:quotes_on_dev (2018 WordPress demo)"
+}

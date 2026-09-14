@@ -1,0 +1,25 @@
+{
+  "id": "19d8095bbd44",
+  "text": "We're leading China in AI, we're the most sophisticated country in the world, and frankly, I want to keep it that way because whoever wins AI, wins,",
+  "speaker": "Donald Trump",
+  "spokenOn": null,
+  "context": "Trump downplays calls for AI slowdown",
+  "tags": [
+    "from-news",
+    "china"
+  ],
+  "sources": [
+    {
+      "label": "NPR Politics — Trump downplays calls for AI slowdown",
+      "url": "https://www.npr.org/2026/09/13/nx-s1-5968078/trump-mike-johnson-ai-slowdown",
+      "type": "secondary",
+      "accessedAt": "2026-09-14",
+      "excerpt": "\"We're leading China in AI, we're the most sophisticated country in the world, and frankly, I want to keep it that way because whoever wins AI, wins,\" Trump said."
+    }
+  ],
+  "confidence": "secondary",
+  "status": "published",
+  "addedAt": "2026-09-14",
+  "addedBy": "ingest:npr-politics",
+  "notes": "Sentence as the article printed it — a report quoting him, not a transcript. Ingest evidence (sentence-quote, fetched 2026-09-14T04:55:27.044Z): \"We're leading China in AI, we're the most sophisticated country in the world, and frankly, I want to keep it that way because whoever wins AI, wins,\" Trump said. Approved via dashboard on 2026-09-14"
+}

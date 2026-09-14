@@ -1,0 +1,24 @@
+{
+  "id": "total-disaster",
+  "text": "It's going to be huge. And by the way, a total disaster for them.",
+  "spokenOn": null,
+  "context": "Campaign rally",
+  "tags": [
+    "campaign"
+  ],
+  "confidence": "widely-reported",
+  "sources": [
+    {
+      "label": "Wikipedia — Donald Trump",
+      "url": "https://en.wikipedia.org/wiki/Donald_Trump",
+      "type": "reference",
+      "accessedAt": "2026-09-13",
+      "excerpt": null
+    }
+  ],
+  "notes": "Thin attribution — slated for replacement by a properly sourced ingest.",
+  "speaker": "Donald Trump",
+  "status": "published",
+  "addedAt": "2026-09-13",
+  "addedBy": "migration:quotes_on_dev (2018 WordPress demo)"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "youre-fired",
+  "text": "You're fired.",
+  "spokenOn": null,
+  "context": "The Apprentice (NBC), 2004–2015",
+  "tags": [
+    "television",
+    "catchphrase"
+  ],
+  "confidence": "secondary",
+  "sources": [
+    {
+      "label": "Wikipedia — The Apprentice (American TV series)",
+      "url": "https://en.wikipedia.org/wiki/The_Apprentice",
+      "type": "reference",
+      "accessedAt": "2026-09-13",
+      "excerpt": null
+    }
+  ],
+  "speaker": "Donald Trump",
+  "notes": null,
+  "status": "published",
+  "addedAt": "2026-09-13",
+  "addedBy": "migration:quotes_on_dev (2018 WordPress demo)"
+}

@@ -1,0 +1,28 @@
+{
+  "name": "quotesondon",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Quotes on Don — a random quote generator with a verifiable quote pipeline.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "npm run data:check && astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "data:check": "node tools/validate-quotes.mjs",
+    "ingest": "node tools/ingest.mjs",
+    "dash": "node tools/dashboard.mjs",
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "@astrojs/rss": "^4.0.12",
+    "@astrojs/sitemap": "^3.7.4",
+    "astro": "^7.3.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

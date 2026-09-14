@@ -1,0 +1,25 @@
+{
+  "id": "nobody-knows-more-about-taxes",
+  "text": "Nobody knows more about taxes than I do.",
+  "spokenOn": null,
+  "context": "Interview",
+  "tags": [
+    "taxes",
+    "television"
+  ],
+  "confidence": "widely-reported",
+  "sources": [
+    {
+      "label": "Wikipedia — Donald Trump",
+      "url": "https://en.wikipedia.org/wiki/Donald_Trump",
+      "type": "reference",
+      "accessedAt": "2026-09-13",
+      "excerpt": null
+    }
+  ],
+  "speaker": "Donald Trump",
+  "notes": null,
+  "status": "published",
+  "addedAt": "2026-09-13",
+  "addedBy": "migration:quotes_on_dev (2018 WordPress demo)"
+}

@@ -1,0 +1,24 @@
+{
+  "id": "bored-with-winning",
+  "text": "We're going to have so much winning that you may get bored with winning.",
+  "spokenOn": null,
+  "context": "Campaign rally",
+  "tags": [
+    "campaign"
+  ],
+  "confidence": "widely-reported",
+  "sources": [
+    {
+      "label": "Wikipedia — Donald Trump 2016 presidential campaign",
+      "url": "https://en.wikipedia.org/wiki/Donald_Trump_2016_presidential_campaign",
+      "type": "reference",
+      "accessedAt": "2026-09-13",
+      "excerpt": null
+    }
+  ],
+  "speaker": "Donald Trump",
+  "notes": null,
+  "status": "published",
+  "addedAt": "2026-09-13",
+  "addedBy": "migration:quotes_on_dev (2018 WordPress demo)"
+}

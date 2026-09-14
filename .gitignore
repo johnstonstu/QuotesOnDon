@@ -1,0 +1,20 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# local env / secrets
+.env
+.env.*
+!.env.example
+
+# ingest / dashboard scratch
+data/candidates/
+data/ingest-log/
+!data/candidates/.gitkeep
+
+# os / editor noise
+.DS_Store
+*.log

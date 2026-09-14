@@ -1,0 +1,47 @@
+---
+import Base from '../layouts/Base.astro';
+import { totalQuotes } from '../lib/quotes';
+---
+
+<Base title="About — Quotes on don" description="What this is, and how quotes get in here." path="/about/">
+  <div class="page-head">
+    <h1>About</h1>
+    <p class="lede">
+      In 2018 I built “Quotes on don” at RED Academy: a WordPress theme that showed one random quote per page load,
+      with a CMB2 metabox for the source and a REST API endpoint doing the rotation. It was a school project about
+      the WP API, GET/POST to the database and importing XML.
+    </p>
+    <p class="lede">
+      This is the same idea rebuilt as a static site, with the part that was always missing: <strong>the receipt</strong>.
+      Every quote carries a source, and the store records how confident we are about it.
+    </p>
+  </div>
+
+  <h2>How a quote gets in</h2>
+  <ul class="plain">
+    <li><strong>Ingest</strong> scans citable sources for new remarks and writes candidates with the supporting excerpt and the URL it came from.</li>
+    <li><strong>Review</strong> — nothing publishes itself: a candidate has to be approved, and it lands as a versioned JSON record.</li>
+    <li><strong>Build</strong> — the site is generated from <code>data/quotes/</code>. If a quote has no source, or the record breaks the schema, the build fails.</li>
+  </ul>
+
+  <h2>Honesty rules</h2>
+  <ul class="plain">
+    <li>A quote with no located primary source is labelled “widely reported”, not presented as verified.</li>
+    <li>Sources are labelled primary / secondary / reference, and the URL is kept — nothing cites “the internet”.</li>
+    <li>Ingest keeps a verbatim excerpt so a claim stays checkable after the source link rots.</li>
+    <li>Usual disclaimer: quotations get mangled in circulation. If a quote here looks wrong, it probably is — the source link is one click away.</li>
+  </ul>
+
+  <h2>What this is not</h2>
+  <p class="lede">
+    Not affiliated with, endorsed by, or connected to Donald Trump or any organisation of his. It is a joke site built
+    by a carpenter who went to code school. {totalQuotes} quotes and counting.
+  </p>
+
+  <h2>The original</h2>
+  <p class="lede">
+    The 2018 WordPress theme is kept, unmoved, on the
+    <a href="https://github.com/johnstonstu/QuotesOnDon/tree/legacy/wordpress-2018">legacy/wordpress-2018</a> branch,
+    and its original repository is <a href="https://github.com/johnstonstu/Quotes_on_Dev">johnstonstu/Quotes_on_Dev</a>.
+  </p>
+</Base>

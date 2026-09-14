@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { postIdFrom, verifyPost } from '../tools/x-verify.mjs';
+import { postIdFrom, verifyPost, extractPostRefs } from '../tools/x-verify.mjs';
 
 test('post ids come out of x.com URLs, twitter.com URLs and bare ids', () => {
   assert.equal(postIdFrom('https://x.com/realDonaldTrump/status/2082159711852298494'), '2082159711852298494');
@@ -53,4 +53,30 @@ test('a paraphrase can never be the source: verifyPost returns the mirror text, 
   } finally {
     globalThis.fetch = original;
   }
+});
+test('a blob of paste — a Grok answer, a forwarded message, OCR text — yields its post refs', () => {
+  const blob = `Sure, here are the recent posts:
+   1. https://x.com/realDonaldTrump/status/2082159711852298494 — about the White House
+   2. twitter.com/realDonaldTrump/status/2028505632123326484
+   3. bare id 2057968277062582378
+   also x.com/i/status/2100000000000000000 and a number that is not a post: 12345.`;
+  const refs = extractPostRefs(blob);
+  assert.deepEqual(
+    refs.map((r) => r.id),
+    ['2082159711852298494', '2028505632123326484', '2057968277062582378', '2100000000000000000'],
+  );
+  assert.equal(refs[0].user, 'realDonaldTrump');
+  assert.equal(refs[3].user, null, 'an /i/ link has no username to trust');
+  assert.equal(refs[0].url, 'https://x.com/realDonaldTrump/status/2082159711852298494');
+});
+
+test('the same post pasted twice is queued once', () => {
+  const refs = extractPostRefs('https://x.com/realDonaldTrump/status/2082159711852298494 and again 2082159711852298494');
+  assert.equal(refs.length, 1);
+});
+
+test('prose with no post reference yields nothing rather than a guess', () => {
+  assert.deepEqual(extractPostRefs('He said a lot of things today, all very interesting.'), []);
+  assert.deepEqual(extractPostRefs(''), []);
+  assert.deepEqual(extractPostRefs(undefined), []);
 });

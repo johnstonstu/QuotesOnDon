@@ -5,6 +5,7 @@ the original never had: **every quote carries the receipt**.
 
 - **Site** — Astro, static output, no server, no database, no cookies, no analytics.
 - **Store** — one JSON file per quote in `data/quotes/`, reviewed by a human before it lands.
+- **X** — the bot finds the posts, `tools/x-verify.mjs` supplies the words, you approve them.
 - **Pipeline** — `tools/ingest.mjs` proposes candidates from citable sources; `tools/dashboard.mjs`
   is where they get approved. Nothing publishes itself.
 - **Honesty rules** — enforced by `tools/validate-quotes.mjs`, which the build runs first. A record
@@ -86,6 +87,7 @@ Rules that the validator and the tests enforce:
 
 | Rank | Source | Status | Why |
 | --- | --- | --- | --- |
+| 1 | **X — pasted finds** (`data/x-inbox.txt`) | **on, working** | No keys, no API tier. Whatever the Grok bot finds on X — forwarded from the phone, pasted, or OCR'd — is dropped in the inbox and resolved verbatim by `tools/x-verify.mjs`. |
 | 1 | **X — @realDonaldTrump, via Grok** | **off, needs `XAI_API_KEY`** | Grok (xAI live search) is asked *which posts exist*; the words are then fetched verbatim by `tools/x-verify.mjs`. See "A quote from X" below. |
 | 1 | **X — @realDonaldTrump, official API** | **off, needs `X_BEARER_TOKEN`** | Straight from X, no third party in the middle, but X's free tier cannot read another account's posts — this needs the paid Basic tier (~US$200/mo). |
 | 1b | **Truth Social** (`trumpstruth.org/feed`) | **on, working** | His own posts, full text, a stable URL per post, no auth. Same words as the X feed in practice, since he cross-posts. Stands in while X discovery is dark. |
@@ -116,6 +118,24 @@ node tools/ingest.mjs --selftest=x-grok                              # confirm t
 
 `--selftest` prints exactly what the adapter returned and writes nothing, so a key can be validated in
 one command before a run is trusted.
+
+**The route that needs no key at all** is the inbox: whatever the Grok bot finds on X goes into
+`data/x-inbox.txt` — a whole forwarded message, a screenshot's text, or one URL per line:
+
+```
+https://x.com/realDonaldTrump/status/2082159711852298494
+https://x.com/realDonaldTrump/status/2028505632123326484
+```
+
+```bash
+npm run ingest -- --source=x-inbox     # resolve, write candidates, archive what it used
+```
+
+Every reference in the file is parsed out (URLs, bare post ids, `/i/` links), resolved to its verbatim
+text through the verifier, and turned into a candidate whose evidence records both the discovery route
+and the verifier that supplied the words. Resolved lines move to `data/x-inbox.processed.txt`; lines that
+could not be resolved **stay in the inbox** with the reason appended, so a bad link gets fixed instead of
+silently lost. Lines the parser cannot recognise as a post reference are left alone too.
 
 An alternative that needs no API key at all: ask Grok *in the app on your phone* (where it already reads
 X on your account) to forward recent posts to your Telegram bot, and have the pipeline read that channel

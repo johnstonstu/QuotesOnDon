@@ -34,6 +34,41 @@ export function postIdFrom(input) {
   return match ? match[1] : null;
 }
 
+/**
+ * Pulls every X post reference out of a blob of text (a pasted Telegram message, a
+ * screenshot's OCR, a Grok answer). Accepts x.com/twitter.com status URLs with or
+ * without a scheme, and bare post ids. Returns one entry per unique post, in the
+ * order they appear. Anything it cannot identify is ignored rather than guessed at.
+ */
+export function extractPostRefs(text) {
+  const source = String(text ?? '');
+  const hits = [];
+  const urlSpans = [];
+
+  // URLs: (x|twitter).com/<user>/status/<id> — the username may be absent (i/web links)
+  for (const match of source.matchAll(
+    /(?:https?:\/\/)?(?:www\.|mobile\.)?(?:x|twitter)\.com\/(?:([A-Za-z0-9_]{1,20})\/)?status(?:es)?\/(\d{15,25})/g,
+  )) {
+    // "i" and "web" are X's generic path segments, not usernames.
+    const user = match[1] && !['i', 'web'].includes(match[1].toLowerCase()) ? match[1] : null;
+    hits.push({ index: match.index ?? 0, id: match[2], user });
+    urlSpans.push([match.index ?? 0, (match.index ?? 0) + match[0].length]);
+  }
+
+  // Bare ids, but only standalone ones outside a URL — never carve a post id out of
+  // a longer number, and never re-read one we already took from a URL.
+  for (const match of source.matchAll(/(?<!\d)(\d{15,25})(?!\d)/g)) {
+    const index = match.index ?? 0;
+    if (urlSpans.some(([start, end]) => index >= start && index < end)) continue;
+    hits.push({ index, id: match[1], user: null });
+  }
+
+  return hits
+    .sort((a, b) => a.index - b.index)
+    .filter((hit, i, all) => all.findIndex((h) => h.id === hit.id) === i)
+    .map((hit) => ({ id: hit.id, user: hit.user, url: `https://x.com/${hit.user ?? 'i'}/status/${hit.id}` }));
+}
+
 export async function verifyPost(input) {
   const id = postIdFrom(input);
   if (!id) throw new Error(`not a post id or x.com/…/status/<id> URL: ${input}`);

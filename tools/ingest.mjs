@@ -27,7 +27,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
-import { verifyPost } from './x-verify.mjs';
+import { verifyPost, extractPostRefs } from './x-verify.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CONFIG = JSON.parse(readFileSync(join(ROOT, 'data/sources.json'), 'utf8'));
@@ -444,8 +444,74 @@ async function itemsFromXGrok(source) {
   return items;
 }
 
+/**
+ * The X inbox: anywhere a post reference is pasted — the Grok bot's output forwarded
+ * from the phone, a screenshot's text, or your own paste — lands in data/x-inbox.txt.
+ * Every reference is resolved verbatim by tools/x-verify.mjs before it becomes a
+ * candidate, so this route needs no xAI key and no X API tier.
+ *
+ * Resolved lines are moved to data/x-inbox.processed.txt; lines that could not be
+ * resolved stay put, so a bad link can be fixed rather than silently lost.
+ */
+async function itemsFromXInbox() {
+  const inbox = join(ROOT, 'data/x-inbox.txt');
+  const processed = join(ROOT, 'data/x-inbox.processed.txt');
+  if (!existsSync(inbox)) {
+    console.log('  inbox is empty — paste post URLs (or a whole Grok answer) into data/x-inbox.txt');
+    return [];
+  }
+
+  const lines = readFileSync(inbox, 'utf8').split('\n');
+  const refs = [];
+  const unresolved = [];
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const found = extractPostRefs(trimmed);
+    if (!found.length) unresolved.push(trimmed);
+    else for (const ref of found) refs.push(ref);
+  }
+  if (!refs.length) {
+    console.log(`  nothing to resolve in the inbox (${unresolved.length} line(s) had no post reference)`);
+    return [];
+  }
+
+  const items = [];
+  const done = [];
+  const stamp = new Date().toISOString();
+  for (const ref of refs) {
+    try {
+      const post = await verifyPost(ref.url);
+      if (!post.text) throw new Error('mirror returned no text');
+      items.push({
+        title: `X post by ${post.author ?? ref.user ?? 'unknown'}`,
+        url: post.url,
+        publishedAt: post.createdAt,
+        body: post.text, // verbatim, from the verifier
+        verifiedBy: post.verifiedBy,
+        discovery: 'x-inbox (Grok bot output or a paste)',
+      });
+      done.push(`${ref.url}  # resolved ${stamp}`);
+    } catch (err) {
+      console.log(`  ! ${ref.url}: ${err.message}`);
+      unresolved.push(`${ref.url}  # unresolved ${stamp}: ${err.message}`);
+    }
+  }
+
+  if (!DRY_RUN) {
+    writeFileSync(inbox, unresolved.length ? `${unresolved.join('\n')}\n` : '');
+    if (done.length) {
+      const prior = existsSync(processed) ? readFileSync(processed, 'utf8') : '';
+      writeFileSync(processed, `${prior}${done.join('\n')}\n`);
+    }
+    console.log(`  ${done.length} resolved, ${unresolved.length} kept in the inbox`);
+  }
+  return items;
+}
+
 const ADAPTERS = {
   'x-grok': itemsFromXGrok,
+  'x-inbox': itemsFromXInbox,
   'post-feed': fetchFeedItems,
   rss: fetchFeedItems,
   'reddit-rss': itemsFromReddit,
@@ -585,7 +651,9 @@ for (const source of enabled) {
           text: hit.text,
           speaker: 'Donald Trump',
           spokenOn: isPost ? item.publishedAt : null, // a post has a publication date; a report's date is not when he said it
-          context: isPost ? `${source.id === 'x-trump' ? 'X post' : 'Truth Social post'}${item.publishedAt ? `, ${item.publishedAt}` : ''}` : item.title || null,
+          context: isPost
+            ? `${['x-grok', 'x-inbox', 'x-api'].includes(source.kind) ? 'X post' : 'Truth Social post'}${item.publishedAt ? `, ${item.publishedAt}` : ''}`
+            : item.title || null,
           tags: [...(isPost ? ['from-post'] : isMeme ? ['from-meme'] : ['from-news']), ...tagsFor(hit.text)],
           sources: [
             {

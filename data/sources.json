@@ -18,6 +18,15 @@
       "notes": "FIRST CHOICE for X. Grok (xAI live search, sources:[{type:'x'}]) is asked only WHICH posts exist; the words are then fetched verbatim by tools/x-verify.mjs from a public mirror, so a model's paraphrase can never reach the store. A post that cannot be resolved verbatim is dropped. Confirm the key and request shape with: node tools/ingest.mjs --selftest=x-grok"
     },
     {
+      "id": "x-inbox",
+      "label": "X — pasted finds (Grok bot output, screenshots, your own paste)",
+      "kind": "x-inbox",
+      "extract": "post",
+      "enabled": true,
+      "sourceType": "primary",
+      "notes": "The route that needs no keys. Whatever the Grok bot finds on X — forwarded from the phone, pasted, or OCR'd from a screenshot — goes into data/x-inbox.txt; every reference is resolved to its verbatim text by tools/x-verify.mjs before it becomes a candidate. Resolved lines move to data/x-inbox.processed.txt; unresolved ones stay in the inbox so a bad link can be fixed rather than silently dropped. The bot finds; the verifier supplies the words."
+    },
+    {
       "id": "x-api",
       "label": "X — @realDonaldTrump (official API v2)",
       "kind": "x-api",

@@ -7,19 +7,30 @@
   "duplicateThreshold": 0.75,
   "sources": [
     {
-      "id": "x-trump",
-      "label": "X — @realDonaldTrump",
+      "id": "x-grok",
+      "label": "X — @realDonaldTrump (discovery via Grok, text verified verbatim)",
+      "kind": "x-grok",
+      "handle": "realDonaldTrump",
+      "extract": "post",
+      "enabled": false,
+      "sourceType": "primary",
+      "requiresEnv": "XAI_API_KEY",
+      "notes": "FIRST CHOICE for X. Grok (xAI live search, sources:[{type:'x'}]) is asked only WHICH posts exist; the words are then fetched verbatim by tools/x-verify.mjs from a public mirror, so a model's paraphrase can never reach the store. A post that cannot be resolved verbatim is dropped. Confirm the key and request shape with: node tools/ingest.mjs --selftest=x-grok"
+    },
+    {
+      "id": "x-api",
+      "label": "X — @realDonaldTrump (official API v2)",
       "kind": "x-api",
       "handle": "realDonaldTrump",
       "extract": "post",
       "enabled": false,
       "sourceType": "primary",
       "requiresEnv": "X_BEARER_TOKEN",
-      "notes": "The first source to switch on. Needs a bearer token in the environment (X developer app). X's free tier cannot read another account's posts — reading @realDonaldTrump needs the paid Basic tier (~US$200/mo). Until a token is present the pipeline says so and skips, rather than pretending."
+      "notes": "Alternative to the Grok route: reads the timeline straight from X. Needs an X developer app bearer token, and X's free tier cannot read another account's posts, so this needs the paid Basic tier (~US$200/mo). Kept because it is the one route with no third-party mirror in the middle."
     },
     {
       "id": "truth-social",
-      "label": "Truth Social (Trump's Truth archive feed)",
+      "label": "Truth Social (Trump's Truth archive feed) — stands in while X discovery is dark",
       "kind": "post-feed",
       "url": "https://www.trumpstruth.org/feed",
       "extract": "post",

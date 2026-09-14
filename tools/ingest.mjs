@@ -27,6 +27,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
+import { verifyPost } from './x-verify.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CONFIG = JSON.parse(readFileSync(join(ROOT, 'data/sources.json'), 'utf8'));
@@ -355,7 +356,96 @@ async function itemsFromHtmlList(source) {
   return out;
 }
 
+
+/**
+ * X discovery via Grok (xAI live search). Grok's job is ONLY to find which posts
+ * exist — never to tell us what they say. Every URL it returns is resolved through
+ * tools/x-verify.mjs and the verbatim text comes from there. A post that cannot be
+ * resolved is dropped, so a paraphrase can never reach the store.
+ *
+ * Written to xAI's documented `search_parameters` shape; run
+ * `node tools/ingest.mjs --selftest=x-grok` to confirm the key and the request shape
+ * against the live API before trusting a run.
+ */
+async function itemsFromXGrok(source) {
+  const key = process.env.XAI_API_KEY;
+  if (!key) {
+    throw new Error(
+      'no XAI_API_KEY — Grok cannot be asked which posts are new. Add an xAI key to .env, or use the Truth Social source (live today) which carries the same words.',
+    );
+  }
+  const hours = Number(flag('hours', 48));
+  const from = new Date(Date.now() - hours * 3600_000).toISOString();
+  const request = {
+    model: process.env.XAI_MODEL || 'grok-4',
+    messages: [
+      {
+        role: 'system',
+        content:
+          'You return only URLs of recent X posts. Never quote or paraphrase the posts. Output a JSON array of strings.',
+      },
+      {
+        role: 'user',
+        content:
+          `List the URLs of X posts published by @${source.handle} between ${from} and now. ` +
+          'Only original posts by that account (no replies, no reposts). ' +
+          'Reply with a JSON array of x.com/<handle>/status/<id> strings and nothing else.',
+      },
+    ],
+    search_parameters: {
+      mode: 'on',
+      sources: [{ type: 'x' }],
+      return_citations: true,
+      from_date: from,
+      max_search_results: 30,
+    },
+    temperature: 0,
+  };
+
+  const res = await fetch('https://api.x.ai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
+    body: JSON.stringify(request),
+    signal: AbortSignal.timeout(60_000),
+  });
+  if (!res.ok) {
+    throw new Error(`xAI returned HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  }
+  const data = await res.json();
+  const content = data?.choices?.[0]?.message?.content ?? '';
+  const citations = data?.citations ?? [];
+
+  // URLs from the answer and from citations; the model's prose is ignored.
+  const urls = new Set();
+  for (const match of `${content} ${JSON.stringify(citations)}`.matchAll(/https?:\/\/(?:www\.)?(?:x|twitter)\.com\/[A-Za-z0-9_]+\/status\/\d{15,25}/g)) {
+    urls.add(match[0]);
+  }
+  if (!urls.size) {
+    throw new Error(`Grok returned no usable post URLs. Raw answer: ${content.slice(0, 200)}`);
+  }
+
+  const items = [];
+  for (const url of urls) {
+    try {
+      const post = await verifyPost(url);
+      if (!post.text) continue;
+      items.push({
+        title: `X post by ${post.author ?? `@${source.handle}`}`,
+        url: post.url,
+        publishedAt: post.createdAt,
+        body: post.text, // verbatim, from the verifier — never from the model
+        verifiedBy: post.verifiedBy,
+        discovery: `xai-live-search (${request.model})`,
+      });
+    } catch (err) {
+      console.log(`  ! could not verify ${url}: ${err.message}`);
+    }
+  }
+  return items;
+}
+
 const ADAPTERS = {
+  'x-grok': itemsFromXGrok,
   'post-feed': fetchFeedItems,
   rss: fetchFeedItems,
   'reddit-rss': itemsFromReddit,
@@ -402,6 +492,29 @@ if (args.includes('--list')) {
   for (const source of CONFIG.sources) {
     const gate = source.requiresEnv ? (process.env[source.requiresEnv] ? 'env set' : `needs ${source.requiresEnv}`) : 'no auth';
     console.log(`${source.enabled ? 'on ' : 'off'}  ${source.id.padEnd(18)} ${source.kind.padEnd(12)} ${gate.padEnd(18)} ${source.label}`);
+  }
+  process.exit(0);
+}
+
+const SELFTEST = flag('selftest');
+if (SELFTEST) {
+  const source = CONFIG.sources.find((s) => s.id === SELFTEST);
+  if (!source) {
+    console.error(`unknown source "${SELFTEST}". Known: ${CONFIG.sources.map((s) => s.id).join(', ')}`);
+    process.exit(2);
+  }
+  console.log(`self-test: ${source.id} (${source.kind})`);
+  try {
+    const items = await ADAPTERS[source.kind](source);
+    console.log(`  adapter returned ${items.length} item(s). Nothing written.`);
+    for (const item of items.slice(0, 3)) {
+      console.log(`  - ${item.url}`);
+      console.log(`    ${String(item.body).slice(0, 120)}…`);
+    }
+    console.log('  adapter is working.');
+  } catch (err) {
+    console.error(`  adapter failed: ${err.message}`);
+    process.exit(1);
   }
   process.exit(0);
 }
@@ -495,6 +608,8 @@ for (const source of enabled) {
           evidence: {
             method: source.extract,
             articleTitle: item.title || null,
+            verifier: item.verifiedBy ?? null,
+            discovery: item.discovery ?? null,
             articlePublishedAt: item.publishedAt ?? null,
             fetchedAt: new Date().toISOString(),
             surroundingText: hit.evidence.slice(0, 600),

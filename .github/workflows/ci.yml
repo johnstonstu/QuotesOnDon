@@ -28,6 +28,9 @@ jobs:
       - name: Tests
         run: npm test
 
+      - name: Research reports are complete and sourced
+        run: npm run check:research
+
       - name: Build
         run: npm run build
 

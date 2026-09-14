@@ -1,0 +1,49 @@
+{
+  "task_id": "task-04-licensing-review",
+  "base": "main",
+  "title": "What may a public site legally reproduce here?",
+  "question": "For a public, non-commercial site that shows one short quote at a time with a source link, what are the actual constraints — copyright, personality/image rights, and the terms of the services the pipeline reads?",
+  "why": "The site is going public on a custom domain. This is the one risk nobody has looked at yet.",
+  "allowed_paths": [
+    "research/"
+  ],
+  "excluded_paths": [
+    "src/",
+    "tools/",
+    "data/quotes/",
+    "data/candidates/",
+    "data/schema/",
+    "data/sources.json",
+    "public/",
+    "package.json",
+    "package-lock.json",
+    ".github/",
+    "astro.config.mjs",
+    "README.md"
+  ],
+  "deliverable": "research/licensing-review.md",
+  "acceptance_command": "node tools/check-research.mjs research/licensing-review.md",
+  "must_include": [
+    "copyright position on short quotations with attribution, including any jurisdiction-relevant doctrine, cited to a real source",
+    "name/image/trademark considerations for the site's branding",
+    "the terms of service of: truthsocial.com, x.com, trumpstruth.org, and any mirror recommended by task-01 — specifically what they say about automated reading and redistribution",
+    "a pragmatic risk list: what is fine, what needs a change, what needs a human lawyer"
+  ],
+  "boundaries": [
+    "Read-only outside research/: no edits to the store, the site, the tools or CI, and no commits to main.",
+    "Never present a model's wording as a source's wording. If you cannot fetch it, it is not evidence.",
+    "No accounts, no purchases, no form submissions, no rate-limit evasion.",
+    "This is not legal advice and the report must say so plainly in its first paragraph.",
+    "Cite primary sources (the actual terms pages), not blog summaries."
+  ],
+  "engine": "coordinator-choice",
+  "model": "coordinator-choice",
+  "bounds": {
+    "max_runtime_minutes": 30,
+    "max_tool_calls": 40,
+    "max_spend_usd": 0,
+    "network": "read-only HTTP GET; no form submissions, no account creation, no purchases"
+  },
+  "commit_instruction": "One commit on the worker branch containing only the report file. Do not merge, do not push to main, do not open a PR — the coordinator decides what is adopted.",
+  "report_requirements": "See research/README.md — six required sections, every finding backed by a fetched URL."
+}

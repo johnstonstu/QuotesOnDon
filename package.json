@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Quotes on Don — a random quote generator with a verifiable quote pipeline.",
+  "description": "Quotes on Don \u2014 a random quote generator with a verifiable quote pipeline.",
   "scripts": {
     "dev": "astro dev",
     "build": "npm run data:check && astro build",
@@ -12,7 +12,10 @@
     "data:check": "node tools/validate-quotes.mjs",
     "ingest": "node tools/ingest.mjs",
     "dash": "node tools/dashboard.mjs",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs && node tools/make-packets.mjs --check",
+    "check:research": "node tools/check-research.mjs",
+    "packets": "node tools/make-packets.mjs",
+    "packets:check": "node tools/make-packets.mjs --check"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.12",

@@ -1,0 +1,49 @@
+{
+  "task_id": "task-02-x-verifier-survey",
+  "base": "main",
+  "title": "How reliable is verbatim X post resolution?",
+  "question": "Given a post id, which public resolvers return the verbatim post text, and at what success rate and rate limit?",
+  "why": "The X route depends on a verifier supplying the words; if it is flaky, every X candidate silently drops.",
+  "allowed_paths": [
+    "research/"
+  ],
+  "excluded_paths": [
+    "src/",
+    "tools/",
+    "data/quotes/",
+    "data/candidates/",
+    "data/schema/",
+    "data/sources.json",
+    "public/",
+    "package.json",
+    "package-lock.json",
+    ".github/",
+    "astro.config.mjs",
+    "README.md"
+  ],
+  "deliverable": "research/x-verifier-survey.md",
+  "acceptance_command": "node tools/check-research.mjs research/x-verifier-survey.md",
+  "must_include": [
+    "a sample of at least 10 real post ids (source them however you like — search engines, public pages — as long as each id is real and you say where it came from)",
+    "per resolver: success count, failures with the exact error, latency, and any rate limit you observed",
+    "what each resolver does with a deleted or protected post (this is the honesty case: it must fail, not invent)",
+    "a recommended fallback chain"
+  ],
+  "boundaries": [
+    "Read-only outside research/: no edits to the store, the site, the tools or CI, and no commits to main.",
+    "Never present a model's wording as a source's wording. If you cannot fetch it, it is not evidence.",
+    "No accounts, no purchases, no form submissions, no rate-limit evasion.",
+    "Never present a model's paraphrase of a post as the post text.",
+    "No API keys, no accounts, no paid tiers."
+  ],
+  "engine": "coordinator-choice",
+  "model": "coordinator-choice",
+  "bounds": {
+    "max_runtime_minutes": 30,
+    "max_tool_calls": 40,
+    "max_spend_usd": 0,
+    "network": "read-only HTTP GET; no form submissions, no account creation, no purchases"
+  },
+  "commit_instruction": "One commit on the worker branch containing only the report file. Do not merge, do not push to main, do not open a PR — the coordinator decides what is adopted.",
+  "report_requirements": "See research/README.md — six required sections, every finding backed by a fetched URL."
+}

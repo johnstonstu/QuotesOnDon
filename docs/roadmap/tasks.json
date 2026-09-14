@@ -1,0 +1,141 @@
+{
+  "generatedBy": "tools/make-packets.mjs",
+  "base": "main",
+  "note": "Research only. No task edits the quote store, the site, the tools, or CI. Every task writes exactly one report under research/ and proves it with an acceptance command. engine/model/bounds are deliberately left for the coordinator to pin: no live worker experiment or paid model benchmark runs without an explicit provider, model, budget and Stu's approval.",
+  "defaults": {
+    "allowed_paths": [
+      "research/"
+    ],
+    "excluded_paths": [
+      "src/",
+      "tools/",
+      "data/quotes/",
+      "data/candidates/",
+      "data/schema/",
+      "data/sources.json",
+      "public/",
+      "package.json",
+      "package-lock.json",
+      ".github/",
+      "astro.config.mjs",
+      "README.md"
+    ],
+    "commit_instruction": "One commit on the worker branch containing only the report file. Do not merge, do not push to main, do not open a PR — the coordinator decides what is adopted.",
+    "bounds": {
+      "max_runtime_minutes": 30,
+      "max_tool_calls": 40,
+      "max_spend_usd": 0,
+      "network": "read-only HTTP GET; no form submissions, no account creation, no purchases"
+    },
+    "boundaries": [
+      "Read-only outside research/: no edits to the store, the site, the tools or CI, and no commits to main.",
+      "Never present a model's wording as a source's wording. If you cannot fetch it, it is not evidence.",
+      "No accounts, no purchases, no form submissions, no rate-limit evasion."
+    ]
+  },
+  "tasks": [
+    {
+      "task_id": "task-01-mirror-survey",
+      "title": "Fallback sources for his first-person posts",
+      "question": "If the trumpstruth.org archive feed disappeared tomorrow, which other public sources carry the same posts, and how do their ids map to the canonical truthsocial.com post URL?",
+      "why": "That feed is currently the only automated path for first-person posts, so it is a single point of failure for the whole store.",
+      "deliverable": "research/mirror-survey.md",
+      "must_include": [
+        "at least three candidates, each probed with a real HTTP request and its status recorded",
+        "for each: does it carry the canonical truthsocial.com URL or original id, or only its own id?",
+        "stability signals: who runs it, is there robots.txt, does it rate-limit",
+        "a ranked recommendation with the trade-off stated, including 'do not use' where the route requires disguising the client"
+      ],
+      "boundaries": [
+        "Do not fetch truthsocial.com itself with a spoofed browser User-Agent. If a source only works that way, record that as the finding and disqualify it.",
+        "Record failures as findings (dead, blocked, paywalled), do not route around them."
+      ]
+    },
+    {
+      "task_id": "task-02-x-verifier-survey",
+      "title": "How reliable is verbatim X post resolution?",
+      "question": "Given a post id, which public resolvers return the verbatim post text, and at what success rate and rate limit?",
+      "why": "The X route depends on a verifier supplying the words; if it is flaky, every X candidate silently drops.",
+      "deliverable": "research/x-verifier-survey.md",
+      "must_include": [
+        "a sample of at least 10 real post ids (source them however you like — search engines, public pages — as long as each id is real and you say where it came from)",
+        "per resolver: success count, failures with the exact error, latency, and any rate limit you observed",
+        "what each resolver does with a deleted or protected post (this is the honesty case: it must fail, not invent)",
+        "a recommended fallback chain"
+      ],
+      "boundaries": [
+        "Never present a model's paraphrase of a post as the post text.",
+        "No API keys, no accounts, no paid tiers."
+      ]
+    },
+    {
+      "task_id": "task-03-extraction-quality",
+      "title": "Is the news-quote extractor worth its candidates?",
+      "question": "Across a labelled sample, what is the precision of the sentence-quote extractor in tools/ingest.mjs, and what single change would raise it most?",
+      "why": "Every false positive costs a human review and weakens the claim that a candidate is a quote with a receipt.",
+      "deliverable": "research/extraction-quality.md",
+      "must_include": [
+        "a labelled sample of at least 25 candidates produced by the extractor, each marked correct / wrong / unclear, with the reason for each wrong one",
+        "the measured precision, with the sample size stated",
+        "failure modes grouped (e.g. quote belongs to another speaker, headline fragment, paraphrase in quotes)",
+        "one recommended change with its expected effect, plus a fixture file under research/fixtures/ that would test it"
+      ],
+      "boundaries": [
+        "Do not modify tools/ingest.mjs. Propose; do not implement.",
+        "Run the extractor read-only if you use it; do not write to data/candidates/."
+      ]
+    },
+    {
+      "task_id": "task-04-licensing-review",
+      "title": "What may a public site legally reproduce here?",
+      "question": "For a public, non-commercial site that shows one short quote at a time with a source link, what are the actual constraints — copyright, personality/image rights, and the terms of the services the pipeline reads?",
+      "why": "The site is going public on a custom domain. This is the one risk nobody has looked at yet.",
+      "deliverable": "research/licensing-review.md",
+      "must_include": [
+        "copyright position on short quotations with attribution, including any jurisdiction-relevant doctrine, cited to a real source",
+        "name/image/trademark considerations for the site's branding",
+        "the terms of service of: truthsocial.com, x.com, trumpstruth.org, and any mirror recommended by task-01 — specifically what they say about automated reading and redistribution",
+        "a pragmatic risk list: what is fine, what needs a change, what needs a human lawyer"
+      ],
+      "boundaries": [
+        "This is not legal advice and the report must say so plainly in its first paragraph.",
+        "Cite primary sources (the actual terms pages), not blog summaries."
+      ]
+    },
+    {
+      "task_id": "task-05-sourcing-audit",
+      "title": "Upgrade the twelve legacy quotes or declare them unfindable",
+      "question": "For each of the twelve quotes migrated from the 2018 demo, is there a real primary or secondary source that pins it — and if not, which should be retired from a site that promises a receipt?",
+      "why": "Eight of the twelve are labelled 'widely reported — no located primary source'. The site's credibility rests on that label being temporary rather than permanent.",
+      "deliverable": "research/sourcing-audit.md",
+      "must_include": [
+        "one row per quote id (see data/quotes/ for the twelve), with: found source URL, source type (primary/secondary/reference) and a verbatim excerpt proving the wording",
+        "for the ones you cannot pin: what you searched, and a recommendation to retire, keep labelled, or keep hunting",
+        "explicitly flag any quote whose wording appears to have drifted from what the source says"
+      ],
+      "boundaries": [
+        "Do not edit data/quotes/ — this is a proposal table for a human to apply.",
+        "Do not invent a source. 'Unfindable' is a valuable result; a plausible-looking citation is a disaster.",
+        "Wikipedia alone does not upgrade a quote above 'widely reported' — find the underlying transcript, video or report."
+      ]
+    },
+    {
+      "task_id": "task-06-x-automation-options",
+      "title": "What does legitimate X automation cost, today?",
+      "question": "Ignoring scraper workarounds, what are the real options and current prices for reading @realDonaldTrump's posts programmatically?",
+      "why": "Everything currently leans on a Grok Bot handoff. That is fine but it is one path, and nobody has priced the alternatives.",
+      "deliverable": "research/x-automation-options.md",
+      "must_include": [
+        "each option with its current price, cited to the vendor's own pricing page and dated",
+        "what each tier actually permits (read access to another account's timeline? volume? commercial use?)",
+        "xAI API live search: price per search, and whether it returns post ids or only prose answers",
+        "a monthly cost estimate for this project's realistic volume (tens of posts a day, not millions)",
+        "a recommendation: stay as we are, or change, and what would change it"
+      ],
+      "boundaries": [
+        "No purchases, no account creation, no free-trial signups.",
+        "Prices change: state the date you read them and link the page."
+      ]
+    }
+  ]
+}

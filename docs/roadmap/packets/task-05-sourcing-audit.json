@@ -1,0 +1,49 @@
+{
+  "task_id": "task-05-sourcing-audit",
+  "base": "main",
+  "title": "Upgrade the twelve legacy quotes or declare them unfindable",
+  "question": "For each of the twelve quotes migrated from the 2018 demo, is there a real primary or secondary source that pins it — and if not, which should be retired from a site that promises a receipt?",
+  "why": "Eight of the twelve are labelled 'widely reported — no located primary source'. The site's credibility rests on that label being temporary rather than permanent.",
+  "allowed_paths": [
+    "research/"
+  ],
+  "excluded_paths": [
+    "src/",
+    "tools/",
+    "data/quotes/",
+    "data/candidates/",
+    "data/schema/",
+    "data/sources.json",
+    "public/",
+    "package.json",
+    "package-lock.json",
+    ".github/",
+    "astro.config.mjs",
+    "README.md"
+  ],
+  "deliverable": "research/sourcing-audit.md",
+  "acceptance_command": "node tools/check-research.mjs research/sourcing-audit.md",
+  "must_include": [
+    "one row per quote id (see data/quotes/ for the twelve), with: found source URL, source type (primary/secondary/reference) and a verbatim excerpt proving the wording",
+    "for the ones you cannot pin: what you searched, and a recommendation to retire, keep labelled, or keep hunting",
+    "explicitly flag any quote whose wording appears to have drifted from what the source says"
+  ],
+  "boundaries": [
+    "Read-only outside research/: no edits to the store, the site, the tools or CI, and no commits to main.",
+    "Never present a model's wording as a source's wording. If you cannot fetch it, it is not evidence.",
+    "No accounts, no purchases, no form submissions, no rate-limit evasion.",
+    "Do not edit data/quotes/ — this is a proposal table for a human to apply.",
+    "Do not invent a source. 'Unfindable' is a valuable result; a plausible-looking citation is a disaster.",
+    "Wikipedia alone does not upgrade a quote above 'widely reported' — find the underlying transcript, video or report."
+  ],
+  "engine": "coordinator-choice",
+  "model": "coordinator-choice",
+  "bounds": {
+    "max_runtime_minutes": 30,
+    "max_tool_calls": 40,
+    "max_spend_usd": 0,
+    "network": "read-only HTTP GET; no form submissions, no account creation, no purchases"
+  },
+  "commit_instruction": "One commit on the worker branch containing only the report file. Do not merge, do not push to main, do not open a PR — the coordinator decides what is adopted.",
+  "report_requirements": "See research/README.md — six required sections, every finding backed by a fetched URL."
+}

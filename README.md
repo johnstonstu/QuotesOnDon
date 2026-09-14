@@ -40,7 +40,7 @@ npm test           # store rules + build freshness
 | `data/ingest-log/` | One file per run: what was checked, what was written, what failed. |
 | `src/lib/quotes.ts` | The only reader of the store; everything else goes through it. |
 | `src/pages/` | `/` (random), `/quotes/` (search + tags), `/quotes/<id>/` (provenance), `/status/`, `/about/`, `/rss.xml`. |
-| `tools/` | `ingest.mjs`, `dashboard.mjs`, `validate-quotes.mjs`, `x-verify.mjs`, `migrate-legacy-seed.mjs`. |
+| `tools/` | `ingest.mjs`, `dashboard.mjs`, `validate-quotes.mjs`, `x-verify.mjs`, `x-issues.mjs`, `migrate-legacy-seed.mjs`. |
 | `.github/workflows/` | `ci.yml` (validate + test + build), `deploy.yml` (GitHub Pages). |
 
 ## The quote record
@@ -87,6 +87,7 @@ Rules that the validator and the tests enforce:
 
 | Rank | Source | Status | Why |
 | --- | --- | --- | --- |
+| 1 | **X — Grok Bot handoff** (GitHub issues labelled `x-inbox`) | **on, working** | A Grok Bot browses X on your own account and opens an issue listing post URLs. No key, no API tier, and it works from the Bot's cloud computer. |
 | 1 | **X — pasted finds** (`data/x-inbox.txt`) | **on, working** | No keys, no API tier. Whatever the Grok bot finds on X — forwarded from the phone, pasted, or OCR'd — is dropped in the inbox and resolved verbatim by `tools/x-verify.mjs`. |
 | 1 | **X — @realDonaldTrump, via Grok** | **off, needs `XAI_API_KEY`** | Grok (xAI live search) is asked *which posts exist*; the words are then fetched verbatim by `tools/x-verify.mjs`. See "A quote from X" below. |
 | 1 | **X — @realDonaldTrump, official API** | **off, needs `X_BEARER_TOKEN`** | Straight from X, no third party in the middle, but X's free tier cannot read another account's posts — this needs the paid Basic tier (~US$200/mo). |
@@ -119,7 +120,26 @@ node tools/ingest.mjs --selftest=x-grok                              # confirm t
 `--selftest` prints exactly what the adapter returned and writes nothing, so a key can be validated in
 one command before a run is trusted.
 
-**The route that needs no key at all** is the inbox: whatever the Grok bot finds on X goes into
+**The handoff a Grok Bot uses.** A Grok Bot has its own cloud computer and a browser session, so it can
+read X directly. It must not hand over wording — only which posts exist — so the transport is a GitHub
+issue. Paste this to the Bot:
+
+> Open an issue on `johnstonstu/QuotesOnDon` labelled `x-inbox`, titled "X finds: <topic>". In the body,
+> list the full URLs of recent original posts (not replies or reposts) by @realDonaldTrump about <topic>,
+> one per line, with the post URL only — do not quote or paraphrase any of them.
+
+Then:
+
+```bash
+npm run ingest -- --source=x-issues     # reads open x-inbox issues, verifies, comments, closes
+```
+
+The pipeline resolves every URL in the issue to its verbatim text through the verifier, writes candidates,
+**comments a table of what it found back on the issue**, adds the `ingested` label, and closes the issue
+when everything resolved. If a link cannot be verified the issue stays open with the reason attached —
+the Bot's list is a claim, and an unverifiable claim never becomes a quote.
+
+**The other keyless route** is the inbox: whatever the Grok bot finds on X goes into
 `data/x-inbox.txt` — a whole forwarded message, a screenshot's text, or one URL per line:
 
 ```

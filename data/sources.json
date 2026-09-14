@@ -18,6 +18,15 @@
       "notes": "FIRST CHOICE for X. Grok (xAI live search, sources:[{type:'x'}]) is asked only WHICH posts exist; the words are then fetched verbatim by tools/x-verify.mjs from a public mirror, so a model's paraphrase can never reach the store. A post that cannot be resolved verbatim is dropped. Confirm the key and request shape with: node tools/ingest.mjs --selftest=x-grok"
     },
     {
+      "id": "x-issues",
+      "label": "X — Grok Bot handoff via GitHub issues",
+      "kind": "x-issues",
+      "extract": "post",
+      "enabled": true,
+      "sourceType": "primary",
+      "notes": "Where a Grok Bot's finds land. Tell the Bot: \"open an issue on johnstonstu/QuotesOnDon labelled x-inbox listing URLs of recent @realDonaldTrump posts about <topic>\" — it browses X on your account, this reads the issue, resolves every URL to its verbatim text with tools/x-verify.mjs, comments the outcome back on the issue and closes it when everything resolved. The Bot only ever supplies URLs; the wording comes from the verifier. Needs the gh CLI."
+    },
+    {
       "id": "x-inbox",
       "label": "X — pasted finds (Grok bot output, screenshots, your own paste)",
       "kind": "x-inbox",

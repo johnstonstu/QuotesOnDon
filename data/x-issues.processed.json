@@ -1,0 +1,14 @@
+{
+  "issues": {
+    "1": {
+      "urls": [
+        "https://x.com/realDonaldTrump/status/2082159711852298494",
+        "https://x.com/realDonaldTrump/status/2028505632123326484"
+      ],
+      "resolved": 1,
+      "failed": 1,
+      "closed": false,
+      "ranAt": "2026-09-14T05:33:50.889Z"
+    }
+  }
+}

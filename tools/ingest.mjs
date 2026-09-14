@@ -28,6 +28,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { verifyPost, extractPostRefs } from './x-verify.mjs';
+import { itemsFromXIssues } from './x-issues.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const CONFIG = JSON.parse(readFileSync(join(ROOT, 'data/sources.json'), 'utf8'));
@@ -512,6 +513,7 @@ async function itemsFromXInbox() {
 const ADAPTERS = {
   'x-grok': itemsFromXGrok,
   'x-inbox': itemsFromXInbox,
+  'x-issues': itemsFromXIssues,
   'post-feed': fetchFeedItems,
   rss: fetchFeedItems,
   'reddit-rss': itemsFromReddit,
@@ -652,7 +654,7 @@ for (const source of enabled) {
           speaker: 'Donald Trump',
           spokenOn: isPost ? item.publishedAt : null, // a post has a publication date; a report's date is not when he said it
           context: isPost
-            ? `${['x-grok', 'x-inbox', 'x-api'].includes(source.kind) ? 'X post' : 'Truth Social post'}${item.publishedAt ? `, ${item.publishedAt}` : ''}`
+            ? `${['x-grok', 'x-inbox', 'x-api', 'x-issues'].includes(source.kind) ? 'X post' : 'Truth Social post'}${item.publishedAt ? `, ${item.publishedAt}` : ''}`
             : item.title || null,
           tags: [...(isPost ? ['from-post'] : isMeme ? ['from-meme'] : ['from-news']), ...tagsFor(hit.text)],
           sources: [

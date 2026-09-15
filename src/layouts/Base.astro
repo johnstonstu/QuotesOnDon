@@ -34,7 +34,7 @@ const isCurrent = (href: string) => (href.replace(/\/+$/, '') || '/') === curren
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     <link rel="alternate" type="application/rss+xml" title="Quotes on don" href="/rss.xml" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
@@ -52,7 +52,7 @@ const isCurrent = (href: string) => (href.replace(/\/+$/, '') || '/') === curren
     <a class="skip" href="#main">Skip to the quote</a>
     <header class="site-header wrap">
       <a class="brand" href="/">
-        quotes <em>on</em> don <span class="face" aria-hidden="true">🇺🇸</span>
+        <img src="/qodon-trumpface.svg" alt="Quotes on don" width="414" height="86" />
       </a>
       <nav aria-label="Main">
         {nav.map((item) => (

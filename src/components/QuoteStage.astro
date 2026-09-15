@@ -15,7 +15,7 @@ const badgeClass = quote.confidence;
   <div class="quote-body">
     <blockquote class="quote-text" data-quote-text>{quote.text}</blockquote>
     <figcaption class="quote-attrib">
-      {' '}<span class="dash" aria-hidden="true">&mdash;</span><span data-quote-speaker>{quote.speaker}</span>{source && (
+      <span class="dash" aria-hidden="true">&mdash;</span>{' '}<span data-quote-speaker>{quote.speaker}</span>{source && (
         <a class="source" href={source.url} rel="noopener nofollow">, {source.label}</a>
       )}
     </figcaption>

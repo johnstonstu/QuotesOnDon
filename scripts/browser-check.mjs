@@ -51,6 +51,7 @@ try {
 
   const attrib = (await page.textContent('.quote-attrib')).replace(/\s+/g, ' ');
   check('attribution has no doubled or floating separator', !/ ,|,,/.test(attrib), attrib.slice(0, 64));
+  check('attribution is spaced after the dash', /—\s\S/.test(attrib), attrib.slice(0, 64));
 
   const seen = new Set([quote]);
   for (let i = 0; i < 5; i++) {

@@ -57,17 +57,11 @@ a:hover { text-decoration: underline; text-underline-offset: 3px; }
   padding: 1.75rem 0 1.25rem;
   flex-wrap: wrap;
 }
-.brand {
-  font-family: var(--display);
-  font-weight: 800;
-  font-size: clamp(1.6rem, 4.4vw, 2.35rem);
-  letter-spacing: -0.02em;
-  color: var(--text);
-  display: inline-flex; align-items: baseline; gap: 0.35rem;
-}
+/* The 2018 logo lockup (wordmark + his face) is the brand — shipped as the original
+   SVG, so nothing about it is a redraw. */
+.brand { display: inline-flex; align-items: center; }
 .brand:hover { text-decoration: none; }
-.brand em { font-style: italic; font-weight: 300; color: var(--accent); }
-.brand .face { font-size: 0.62em; transform: translateY(-0.35em); }
+.brand img { height: clamp(26px, 3.4vw, 36px); width: auto; display: block; }
 .site-header nav { display: flex; gap: 1.15rem; flex-wrap: wrap; }
 .site-header nav a {
   color: var(--muted); font-size: 0.86rem; letter-spacing: 0.02em; text-transform: uppercase;

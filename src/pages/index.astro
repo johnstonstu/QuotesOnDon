@@ -68,9 +68,10 @@ const baked = quotes[Math.floor(Math.random() * quotes.length)];
           link.className = 'source';
           link.href = quote.source.url;
           link.rel = 'noopener nofollow';
-          // The separator lives inside the link, so replacing the link never leaves a stray comma.
+          // The comma lives inside the link, so replacing the link cannot leave a stray
+          // separator behind; the dash and speaker already carry their own spacing.
           link.textContent = `, ${quote.source.label}`;
-          attrib.append(' ', link);
+          attrib.append(link);
         }
       }
       if (context) {

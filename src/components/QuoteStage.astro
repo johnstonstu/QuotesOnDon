@@ -3,11 +3,9 @@ import { confidenceLabel, type Quote } from '../lib/quotes';
 
 interface Props {
   quote: Quote;
-  /** Rendered on the archive/list views: keeps attribution on one line. */
-  compact?: boolean;
 }
 
-const { quote, compact = false } = Astro.props;
+const { quote } = Astro.props;
 const source = quote.sources[0];
 const badgeClass = quote.confidence;
 ---
@@ -17,12 +15,8 @@ const badgeClass = quote.confidence;
   <div class="quote-body">
     <blockquote class="quote-text" data-quote-text>{quote.text}</blockquote>
     <figcaption class="quote-attrib">
-      <span class="dash" aria-hidden="true">&mdash;</span>
-      <span data-quote-speaker>{quote.speaker}</span>{source && (
-        <>
-          {' '}
-          <a class="source" href={source.url} rel="noopener nofollow">, {source.label}</a>
-        </>
+      {' '}<span class="dash" aria-hidden="true">&mdash;</span><span data-quote-speaker>{quote.speaker}</span>{source && (
+        <a class="source" href={source.url} rel="noopener nofollow">, {source.label}</a>
       )}
     </figcaption>
     {quote.context && <p class="quote-context">{quote.context}{quote.spokenOn && <> · {quote.spokenOn}</>}</p>}
@@ -32,7 +26,6 @@ const badgeClass = quote.confidence;
         {confidenceLabel[quote.confidence]}
       </span>
     </p>
-    {!compact && quote.notes && <p class="quote-context">{quote.notes}</p>}
   </div>
   <span class="quote-mark closing" aria-hidden="true">&rdquo;</span>
 </figure>

@@ -24,6 +24,7 @@ npm run build      # validates the store, then builds dist/
 npm run preview    # serve the build at http://localhost:4321
 
 npm run dash       # review dashboard → http://127.0.0.1:8799 (DASH_PORT overrides)
+scripts/local.sh start   # serve the build AND the dashboard, detached (stop|status|logs)
 npm run ingest     # hunt for new candidates (writes to data/candidates/)
 npm run data:check # validate the store only
 npm test           # store rules + build freshness

@@ -8,7 +8,7 @@
   "sources": [
     {
       "id": "x-grok",
-      "label": "X — @realDonaldTrump (discovery via Grok, text verified verbatim)",
+      "label": "X post via Grok search",
       "kind": "x-grok",
       "handle": "realDonaldTrump",
       "extract": "post",
@@ -19,7 +19,7 @@
     },
     {
       "id": "x-issues",
-      "label": "X — Grok Bot handoff via GitHub issues",
+      "label": "X finds via GitHub issue",
       "kind": "x-issues",
       "extract": "post",
       "enabled": true,
@@ -28,7 +28,7 @@
     },
     {
       "id": "x-inbox",
-      "label": "X — pasted finds (Grok bot output, screenshots, your own paste)",
+      "label": "X post pasted in the inbox",
       "kind": "x-inbox",
       "extract": "post",
       "enabled": true,
@@ -37,7 +37,7 @@
     },
     {
       "id": "x-api",
-      "label": "X — @realDonaldTrump (official API v2)",
+      "label": "X post via the X API",
       "kind": "x-api",
       "handle": "realDonaldTrump",
       "extract": "post",
@@ -48,7 +48,7 @@
     },
     {
       "id": "truth-social",
-      "label": "Truth Social (Trump's Truth archive feed) — stands in while X discovery is dark",
+      "label": "Trump's Truth archive (Truth Social posts)",
       "kind": "post-feed",
       "url": "https://www.trumpstruth.org/feed",
       "extract": "post",

@@ -59,6 +59,7 @@ function publish(candidate) {
     }
   }
   const { evidence, ...quote } = candidate;
+  const led = { evidence };
   const today = new Date().toISOString().slice(0, 10);
   const record = {
     ...quote,
@@ -66,7 +67,11 @@ function publish(candidate) {
     notes:
       [
         quote.notes,
-        evidence ? `Ingest evidence (${evidence.method}, fetched ${evidence.fetchedAt}): ${evidence.surroundingText}` : null,
+        evidence
+          ? `Found by ${evidence.method === 'post' ? 'his own post' : 'a report quoting him'}${
+              evidence.verifier ? `, verified against ${evidence.verifier}` : ''
+            }; captured ${String(evidence.fetchedAt).slice(0, 10)}. Source text: "${led.evidence?.surroundingText ?? evidence.surroundingText}"`
+          : null,
         `Approved via dashboard on ${today}`,
       ]
         .filter(Boolean)

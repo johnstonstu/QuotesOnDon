@@ -187,16 +187,37 @@ function extractSentenceQuotes(text) {
   return out;
 }
 
-/** His own posts: the words as published. Long posts are split into quotable sentences. */
+/**
+ * His own posts: the words as published. Long posts are split into quotable sentences.
+ *
+ * Two things are refused here, because the store's claim is that these are HIS words:
+ * a repost (RT) carries someone else's words, and a post with no text of its own
+ * (an image-only post, a placeholder) carries nothing to quote.
+ */
 function extractPostText(text) {
   const clean = text
     .replace(/https?:\/\/\S+/g, '')
     .replace(/\s+/g, ' ')
     .trim();
   if (!clean) return [];
-  if (clean.length <= CONFIG.maxQuoteChars) return [{ text: clean, evidence: clean }];
+  if (/^RT[:\s@]/i.test(clean)) return []; // a repost is not his wording
+  if (clean.length < CONFIG.minQuoteChars) return []; // nothing of his own in it
 
-  const sentences = (clean.match(/[^.!?]+[.!?]+/g) ?? []).map((s) => s.trim());
+  // Sentence splitting can leave a dangling quote mark at either end; the store
+  // should not display '" Even Oil was higher...'.
+  const tidy = (t) =>
+    t
+      // A post that links out to a story is a digest, not a quotable line: drop the
+      // link and anything glued to it (the feed often breaks them mid-word).
+      .replace(/\b(?:https?:\/\/)?[\w-]+(?:\.[\w-]+)*\.(?:com|org|net|gov|co|io|news)\b\S*/gi, '')
+      .replace(/\bhttps?\b\S*/gi, '')
+      .replace(/\s{2,}/g, ' ')
+      .replace(/^[\s"“”'‘’—–-]+/, '')
+      .replace(/[\s"“”'‘’]+$/, '')
+      .trim();
+  if (clean.length <= CONFIG.maxQuoteChars) return [{ text: tidy(clean), evidence: clean }];
+
+  const sentences = (clean.match(/[^.!?]+[.!?]+/g) ?? []).map((s) => tidy(s));
   return sentences
     .filter((s) => s.length >= 60 && s.length <= CONFIG.maxQuoteChars)
     .filter((s) => !/^[#@]/.test(s))
@@ -260,7 +281,11 @@ function parseFeed(xml) {
 
 async function fetchFeedItems(source) {
   const res = await politeFetch(source.url, { kind: 'xml' });
-  return parseFeed(await res.text()).filter((item) => item.url);
+  return parseFeed(await res.text())
+    .filter((item) => item.url)
+    // An image-only or placeholder post has no wording to quote: it would only put an
+    // empty candidate in front of a reviewer, and "[No Title]" in the store.
+    .filter((item) => (item.body ?? '').trim().length >= CONFIG.minQuoteChars || source.extract !== 'post');
 }
 
 async function itemsFromReddit(source) {
